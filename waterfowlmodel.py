@@ -12,11 +12,11 @@
 
 
 # Import arcpy module
-import finaloutput, naturalflood
+import finaloutput, naturalflood, public
 import arcpy, os, sys, getopt, datetime
 
 def printHelp():
-        print '\n waterfowlmodel.py -m <waterfowl or flood> -r <MAV or WGCP> -w <workspace folder where geodatabases should reside> -g <geodatabase name>\n\n' \
+        print '\n waterfowlmodel.py -m <waterfowl or flood> -r <Area of interest feature class> -w <workspace folder where geodatabases should reside> -g <geodatabase name>\n\n' \
                 '\n This is the main python script for running the wintering grounds waterfowl model for both the Mississippi Alluvial Valley and West Gulf Coastal Plain regions.\n'\
                 'It was written in python using the arcgis python libraries.  Initially it used ArcModels but they proved a bit limiting and not stable enough for future use.\n\n'\
                 '\nusage: waterfowlmodel \t[--help] [--model <model>] [--region <region>] \n'\
@@ -47,12 +47,12 @@ def main(argv):
          printHelp()
       elif opt in ("-m", "--model"):
          model = arg
-         if model.lower() not in ("waterfowl", "flood"):
+         if model.lower() not in ("waterfowl", "flood", "public"):
                  print 'Model is incorrect'
                  sys.exit(2)
       elif opt in ("-r", "--region"):
          aoi = arg
-         if aoi.lower() not in ("mav", "wgcp"):
+         if (len(aoi) < 1):
                  print 'Region is incorrect'
                  sys.exit(2)
       elif opt in ("-w", "--workspace"):
@@ -78,6 +78,8 @@ def main(argv):
            finaloutput.runWaterfowl(aoi.lower(), inworkspace, ingdb)
    elif model == 'flood':
            naturalflood.runFlood(aoi.lower(), inworkspace, ingdb)
+   elif model == 'public':
+           public.runPublic(aoi.lower(), inworkspace, ingdb)
            
 if __name__ == "__main__":
    main(sys.argv[1:])

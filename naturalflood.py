@@ -14,11 +14,8 @@ from arcpy.sa import *
 
 # Required parameters
 # Name for the feature classes within the geodatabase
-mav = "mav"
-wgcp = "wgcp"
 flood = "Flood_scaled_68"
 crops = "cdl2015"
-publicinput = "Public_output"
 stateboundary = "state_boundaries"
 wrp = "wrp"
 
@@ -37,10 +34,7 @@ def runFlood (region, workspace, gdb):
 
 	gdb = os.path.join(workspace, gdb)
 	scratchgdb = os.path.join(workspace, region + "_scratch.gdb")
-	if (region == 'mav'):
-		aoi = os.path.join(gdb, mav)
-	else:
-		aoi = os.path.join(gdb, wgcp)
+	aoi = os.path.join(gdb, region)
 
 	#setup databases
 	if not (os.path.exists(scratchgdb)):
@@ -55,9 +49,6 @@ def runFlood (region, workspace, gdb):
                 sys.exit(2)
         if not (arcpy.Exists(os.path.join(gdb, flood))):
                 print("Flood dataset '" + naturalflood + "' does not exist")
-                sys.exit(2)
-        if not (arcpy.Exists(os.path.join(gdb, publicinput))):
-                print("Public input '" + publicinput + "' does not exist")
                 sys.exit(2)
         if not (arcpy.Exists(os.path.join(gdb, stateboundary))):
                 print("State boundaries '" + stateboundary + "' does not exist")

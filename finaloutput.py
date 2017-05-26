@@ -8,8 +8,6 @@ import arcpy, os, sys, getopt, datetime
 
 # Required parameters
 # Name for the feature classes within the geodatabase
-mav = "mav"
-wgcp = "wgcp"
 naturalflood = "Natural_flood"
 publicinput = "Public_output"
 stateboundary = "state_boundaries"
@@ -20,11 +18,8 @@ def runWaterfowl (region, workspace, gdb):
 
 	gdb = os.path.join(workspace, gdb)
 	scratchgdb = os.path.join(workspace, region + "_scratch.gdb")
-	if (region == 'mav'):
-		aoi = os.path.join(gdb, mav)
-	else:
-		aoi = os.path.join(gdb, wgcp)
-		
+        aoi = os.path.join(gdb, region)
+
 	#setup databases
 	if not (os.path.exists(scratchgdb)):
                 print("Creating scratch GDB")
