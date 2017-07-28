@@ -15,7 +15,7 @@ from arcpy.sa import *
 # Required parameters
 # Name for the feature classes within the geodatabase
 
-publicinput = "April14_2016_data_pull"
+publicinput = "Public_input_8_12_16"
 
 
 arcpy.env.overwriteOutput = True;

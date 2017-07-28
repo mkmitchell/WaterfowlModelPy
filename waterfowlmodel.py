@@ -25,6 +25,7 @@ def printHelp():
                 'Models\n' \
                 '\t waterfowl\t This does the main processing and requires all sub pieces to be complete\n' \
                 '\t flood\t\t This runs the flood model\n\n' \
+                '\t public\t\t This runs the public model with local input\n\n' \
                 'Region\n' \
                 '\t mav\t\t This option sets the model up to run the Mississippi Alluvial Valley region as the area of interest\n' \
                 '\t wgcp\t\t This option sets the model up to run the West Gulf Coastal Plain region as the area of interest\n\n' \

@@ -8,16 +8,17 @@
 # ---------------------------------------------------------------------------
 
 # Import arcpy module
-import arcpy, os, sys, getopt
+import arcpy, os, sys, getopt, prepflood
 from arcpy.sa import *
 
 
 # Required parameters
 # Name for the feature classes within the geodatabase
-flood = "Flood_scaled_68"
+flood = "IF"
 crops = "cdl2015"
 stateboundary = "state_boundaries"
 wrp = "wrp"
+floodpct = 40
 
 arcpy.env.overwriteOutput = True;
 
@@ -48,7 +49,7 @@ def runFlood (region, workspace, gdb):
                 print("Area of interest '" + aoi + "' does not exist")
                 sys.exit(2)
         if not (arcpy.Exists(os.path.join(gdb, flood))):
-                print("Flood dataset '" + naturalflood + "' does not exist")
+                print("Flood dataset '" + flood + "' does not exist")
                 sys.exit(2)
         if not (arcpy.Exists(os.path.join(gdb, stateboundary))):
                 print("State boundaries '" + stateboundary + "' does not exist")
@@ -66,13 +67,12 @@ def runFlood (region, workspace, gdb):
         Crops = os.path.join(gdb, crops)
         WRP = os.path.join(gdb, wrp)
         State = os.path.join(gdb, stateboundary)
-        Natural_flood_shp = "D:\\GIS\\tools\\Waterfowl model\\wgcp_workspace\\Natural_flood.shp" # provide a default value if unspecified
         WorkspaceGDB = scratchgdb
         try:
                 if arcpy.CheckExtension("Spatial") == "Available":
                         arcpy.CheckOutExtension("Spatial")
                 else:
-                        print("Satial analyst license not available")
+                        print("Spatial analyst license not available")
                         sys.exit(2)
         except Exception, e:
                 print("Can't acquire spatial analyst license: ", e)
@@ -92,6 +92,8 @@ def runFlood (region, workspace, gdb):
         arcpy.CalculateField_management(selectCrop, "CLASS_NAME", "Calc( !gridcode!)", "PYTHON_9.3", "def Calc(grid):\\n  if (grid==1):\\n    return 'Corn'\\n  if (grid==3):\\n    return 'Rice'\\n  if (grid==4):\\n    return 'Sorghum'\\n  if (grid==5):\\n    return 'Soybeans'\\n  if (grid==29):\\n    return 'Millet'\\n  if (grid==190):\\n    return 'Woody Wetlands'")
         ###### Also skipping for speed and testing
         print "Import flood"
+        prepflood.prepFlood(scratchgdb, floodpct, Flooding)
+        Flooding = os.path.join(scratchgdb, "floodSetup")
         plyFlood = arcpy.RasterToPolygon_conversion(Raster(Flooding), os.path.join(scratchgdb, "flooding"), "NO_SIMPLIFY", "VALUE")
         #plyFlood = os.path.join(scratchgdb, "flooding")
         selectFlood = arcpy.Select_analysis(plyFlood, "in_memory/sltFlood", "\"GRIDCODE\" = 1")
