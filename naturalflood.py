@@ -14,8 +14,8 @@ from arcpy.sa import *
 
 # Required parameters
 # Name for the feature classes within the geodatabase
-flood = "IF"
-crops = "cdl2015"
+
+crops = "cdl2016"
 stateboundary = "state_boundaries"
 wrp = "wrp"
 floodpct = 40
@@ -36,7 +36,7 @@ def runFlood (region, workspace, gdb):
 	gdb = os.path.join(workspace, gdb)
 	scratchgdb = os.path.join(workspace, region + "_scratch.gdb")
 	aoi = os.path.join(gdb, region)
-
+        flood = "IF_" + region
 	#setup databases
 	if not (os.path.exists(scratchgdb)):
                 print("Creating scratch GDB")
@@ -61,6 +61,7 @@ def runFlood (region, workspace, gdb):
                 print("Crop dataset '" + crops + "' does not exist")
                 sys.exit(2)
 
+
 # Script arguments from ArcGIS.  Keeping these and setting them = to input parameters
         Workspace = gdb
         Flooding = os.path.join(gdb, flood)
@@ -79,13 +80,14 @@ def runFlood (region, workspace, gdb):
                 sys.exit(2)
         print "Starting analysis"
         rasCrop = Raster(Crops)
+        # Replace a layer/table view name with a path to a dataset (which can be a layer file) or create the layer/table view within the script
         print "Configuring crop type"
         outCrop = Con((rasCrop == 1) | (rasCrop == 3) | (rasCrop == 4) | (rasCrop == 5) | (rasCrop == 29) | (rasCrop == 190), rasCrop, 0)
         print "Converting crop raster to polygon.  This can take a very long time"
         ############# SKIP
-        polyCrop = arcpy.RasterToPolygon_conversion(outCrop, os.path.join(scratchgdb, "polyCrop"), "NO_SIMPLIFY", "Value")
-        #print "Skipping polygon conversion for testing"
-        #polyCrop = os.path.join(scratchgdb, "polyCrop")
+        #polyCrop = arcpy.RasterToPolygon_conversion(outCrop, os.path.join(scratchgdb, "polyCrop"), "NO_SIMPLIFY", "Value")
+        print "Skipping polygon conversion for testing"
+        polyCrop = os.path.join(scratchgdb, "polyCrop")
         ############
         selectCrop = arcpy.Select_analysis(polyCrop, os.path.join(scratchgdb, "sltCrop"), "gridcode > 0")
         arcpy.AddField_management(selectCrop, "CLASS_NAME", "TEXT", "", "", "100", "", "NULLABLE", "NON_REQUIRED", "")
@@ -96,7 +98,7 @@ def runFlood (region, workspace, gdb):
         Flooding = os.path.join(scratchgdb, "floodSetup")
         plyFlood = arcpy.RasterToPolygon_conversion(Raster(Flooding), os.path.join(scratchgdb, "flooding"), "NO_SIMPLIFY", "VALUE")
         #plyFlood = os.path.join(scratchgdb, "flooding")
-        selectFlood = arcpy.Select_analysis(plyFlood, "in_memory/sltFlood", "\"GRIDCODE\" = 1")
+        selectFlood = arcpy.Select_analysis(plyFlood, os.path.join(scratchgdb,"sltFlood"), "\"gridcode\" = 1")
         print "Clipping flood to " + region
         floodregion = arcpy.Clip_analysis(selectFlood, aoi, os.path.join(scratchgdb, "floodAOI"), "")
         #floodregion = os.path.join(scratchgdb, "floodAOI")
@@ -175,9 +177,65 @@ def runFlood (region, workspace, gdb):
         arcpy.AddField_management(singlepart, "ACRES", "DOUBLE", "18", "3", "", "", "NULLABLE", "NON_REQUIRED", "")
         arcpy.CalculateField_management(singlepart, "ACRES", "!POLY_AREA!", "PYTHON_9.3", "")
         print "Final output"
-        arcpy.FeatureClassToFeatureClass_conversion(singlepart, Workspace, "Natural_flood_" + region, "ACRES >= 1 AND COVER_TYPE <> ''", "MANAGE \"MANAGE\" true true false 2 Short 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,MANAGE,-1,-1;BASIN__HUC \"BASIN__HUC\" true true false 29 Text 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,BASIN__HUC,-1,-1;ACRES \"ACRES\" true true false 4 Double 3 18 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,ACRES,-1,-1;WATERSHED \"WATERSHED\" true true false 45 Text 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,GAUGE,-1,-1;STATE \"STATE\" true true false 2 Text 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,STATE_ABBR,-1,-1;Z_RED_OAK_ \"Z_RED_OAK_\" true true false 8 Double 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,Z_RED_OAK_,-1,-1;HABITAT_TY \"HABITAT_TY\" true true false 16 Text 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,HABITAT_TY,-1,-1;Z_HARVESTE \"Z_HARVESTE\" true true false 8 Double 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,Z_HARVESTE,-1,-1;MANAGING_A \"MANAGING_A\" true true false 255 Text 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,MANAGING_A,-1,-1;COMMON_NAM \"COMMON_NAM\" true true false 100 Text 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,COMMON_NAM,-1,-1;PROTECTION \"PROTECTION\" true true false 20 Text 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,PROTECTION,-1,-1;SEEDINDEX \"SEEDINDEX\" true true false 8 Double 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,SEEDINDEX,-1,-1;WTRCNTRL \"WTRCNTRL\" true true false 5 Text 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,WTRCNTRL,-1,-1;PUMP \"PUMP\" true true false 5 Text 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,PUMP,-1,-1;REF_HAB \"REF_HAB\" true true false 5 Text 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,REF_HAB,-1,-1;REFHABAC \"REFHABAC\" true true false 8 Double 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,REFHABAC,-1,-1;MANAGEMENT \"MANAGEMENT\" true true false 100 Text 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,MANAGEMENT,-1,-1;FUNCTIONAL \"FUNCTIONAL\" true true false 1 Text 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,FUNCTIONAL,-1,-1;DEDCALC \"DEDCALC\" true true false 4 Float 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,DEDCALC,-1,-1;OWNER \"OWNER\" true true false 20 Text 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,OWNER,-1,-1;COVER_TYPE \"COVER_TYPE\" true true false 255 Text 0 0 ,First,#,C:\\Users\\mmitchell.DUCKS\\Documents\\ArcGIS\\Default.gdb\\TempClip,COVER_TYPE,-1,-1", "")
+        arcpy.FeatureClassToFeatureClass_conversion(singlepart, Workspace, "Natural_flood_" + region, "ACRES >= 1 AND COVER_TYPE <> ''", "MANAGE \"MANAGE\" true true false 2 Short 0 0 ,First,#," + singlepart + ",MANAGE,-1,-1;BASIN__HUC \"BASIN__HUC\" true true false 29 Text 0 0 ,First,#," + singlepart + ",BASIN__HUC,-1,-1;ACRES \"ACRES\" true true false 4 Double 3 18 ,First,#," + singlepart + ",ACRES,-1,-1;WATERSHED \"WATERSHED\" true true false 45 Text 0 0 ,First,#," + singlepart + ",GAUGE,-1,-1;STATE \"STATE\" true true false 2 Text 0 0 ,First,#," + singlepart + ",STATE_ABBR,-1,-1;Z_RED_OAK_ \"Z_RED_OAK_\" true true false 8 Double 0 0 ,First,#," + singlepart + ",Z_RED_OAK_,-1,-1;HABITAT_TY \"HABITAT_TY\" true true false 16 Text 0 0 ,First,#," + singlepart + ",HABITAT_TY,-1,-1;Z_HARVESTE \"Z_HARVESTE\" true true false 8 Double 0 0 ,First,#," + singlepart + ",Z_HARVESTE,-1,-1;MANAGING_A \"MANAGING_A\" true true false 255 Text 0 0 ,First,#," + singlepart + ",MANAGING_A,-1,-1;COMMON_NAM \"COMMON_NAM\" true true false 100 Text 0 0 ,First,#," + singlepart + ",COMMON_NAM,-1,-1;PROTECTION \"PROTECTION\" true true false 20 Text 0 0 ,First,#," + singlepart + ",PROTECTION,-1,-1;SEEDINDEX \"SEEDINDEX\" true true false 8 Double 0 0 ,First,#," + singlepart + ",SEEDINDEX,-1,-1;WTRCNTRL \"WTRCNTRL\" true true false 5 Text 0 0 ,First,#," + singlepart + ",WTRCNTRL,-1,-1;PUMP \"PUMP\" true true false 5 Text 0 0 ,First,#," + singlepart + ",PUMP,-1,-1;REF_HAB \"REF_HAB\" true true false 5 Text 0 0 ,First,#," + singlepart + ",REF_HAB,-1,-1;REFHABAC \"REFHABAC\" true true false 8 Double 0 0 ,First,#," + singlepart + ",REFHABAC,-1,-1;MANAGEMENT \"MANAGEMENT\" true true false 100 Text 0 0 ,First,#," + singlepart + ",MANAGEMENT,-1,-1;FUNCTIONAL \"FUNCTIONAL\" true true false 1 Text 0 0 ,First,#," + singlepart + ",FUNCTIONAL,-1,-1;DEDCALC \"DEDCALC\" true true false 4 Float 0 0 ,First,#," + singlepart + ",DEDCALC,-1,-1;OWNER \"OWNER\" true true false 20 Text 0 0 ,First,#," + singlepart + ",OWNER,-1,-1;COVER_TYPE \"COVER_TYPE\" true true false 255 Text 0 0 ,First,#," + singlepart + ",COVER_TYPE,-1,-1", "")
         print("Everything good")
         
+
+
+def printHelp():
+        print '\n naturalflood.py -r <Area of interest feature class> -w <workspace folder where geodatabases should reside> -g <geodatabase name>\n\n' \
+                '\n This is the main python script for running the wintering grounds waterfowl model for both the Mississippi Alluvial Valley and West Gulf Coastal Plain regions.\n'\
+                'It was written in python using the arcgis python libraries.  Initially it used ArcModels but they proved a bit limiting and not stable enough for future use.\n\n'\
+                '\nusage: waterfowlmodel \t[--help] [--region <region>] \n'\
+                '\t\t\t[--workspace <path>] [--geodatabase <geodatabase>] \n\n' \
+                'These are the options used to initiate and run the waterfowl model properly.\n\n' \
+                'Region\n' \
+                '\t mav\t\t This option sets the model up to run the Mississippi Alluvial Valley region as the area of interest\n' \
+                '\t wgcp\t\t This option sets the model up to run the West Gulf Coastal Plain region as the area of interest\n\n' \
+                'Workspace\t\t The folder location where your geodatabase and scratch geodatabase will be write/read to/from\n' \
+                'Geodatabase\t\t The geodatabase name where your input datasets will be read from and final output written to\n\n' \
+                'Example:\n' \
+                'naturalflood.py -r mav -w c:\intputfolder -g modelgeodatabase.gdb\n'
+        sys.exit(2)
+        
+def main(argv):
+   aoi = ''
+   inworkspace = ''
+   ingdb = ''
+   try:
+      opts, args = getopt.getopt(argv,"hr:w:g:",["region=","workspace="])
+   except getopt.GetoptError:
+           printHelp()
+   for opt, arg in opts:
+      if opt in ('-h', '--help'):
+         printHelp()
+      elif opt in ("-r", "--region"):
+         aoi = arg
+         if (len(aoi) < 1):
+                 print 'Region is incorrect'
+                 sys.exit(2)
+      elif opt in ("-w", "--workspace"):
+         inworkspace = arg
+         if not (os.path.exists(inworkspace)):
+                 print "Workspace folder doesn't exist.  Please create it"
+                 sys.exit(2)
+      elif opt in ("-g", "--geodatabase"):
+         ingdb = arg
+         if not (os.path.exists(inworkspace)):
+                 print "GDB doesn't exist.  Please create it"
+                 sys.exit(2)
+
+   if len(opts) < 3:
+        printHelp()
+        
+   print 'Region of interest: ', aoi
+   print 'Workspace: ', inworkspace
+   print 'GDB: ', ingdb
+
+   runFlood(aoi.lower(), inworkspace, ingdb)
+
+if __name__ == "__main__":
+   main(sys.argv[1:])
 
 
 

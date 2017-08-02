@@ -39,6 +39,7 @@ def main(argv):
    model = ''
    inworkspace = ''
    ingdb = ''
+   arcpy.env.overwriteOutput = True
    try:
       opts, args = getopt.getopt(argv,"hm:r:w:g:",["region=","workspace="])
    except getopt.GetoptError:
