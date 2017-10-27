@@ -15,9 +15,9 @@ from arcpy.sa import *
 # Required parameters
 # Name for the feature classes within the geodatabase
 
-crops = "cdl2016"
-stateboundary = "state_boundaries"
-wrp = "wrp"
+crops = "CDL_2015"
+stateboundary = "State_boundaries"
+wrp = "WRP"
 floodpct = 40
 
 arcpy.env.overwriteOutput = True;
@@ -85,9 +85,9 @@ def runFlood (region, workspace, gdb):
         outCrop = Con((rasCrop == 1) | (rasCrop == 3) | (rasCrop == 4) | (rasCrop == 5) | (rasCrop == 29) | (rasCrop == 190), rasCrop, 0)
         print "Converting crop raster to polygon.  This can take a very long time"
         ############# SKIP
-        #polyCrop = arcpy.RasterToPolygon_conversion(outCrop, os.path.join(scratchgdb, "polyCrop"), "NO_SIMPLIFY", "Value")
-        print "Skipping polygon conversion for testing"
-        polyCrop = os.path.join(scratchgdb, "polyCrop")
+        polyCrop = arcpy.RasterToPolygon_conversion(outCrop, os.path.join(scratchgdb, "polyCrop"), "NO_SIMPLIFY", "Value")
+        #print "Skipping polygon conversion for testing"
+        #polyCrop = os.path.join(scratchgdb, "polyCrop")
         ############
         selectCrop = arcpy.Select_analysis(polyCrop, os.path.join(scratchgdb, "sltCrop"), "gridcode > 0")
         arcpy.AddField_management(selectCrop, "CLASS_NAME", "TEXT", "", "", "100", "", "NULLABLE", "NON_REQUIRED", "")
@@ -177,7 +177,7 @@ def runFlood (region, workspace, gdb):
         arcpy.AddField_management(singlepart, "ACRES", "DOUBLE", "18", "3", "", "", "NULLABLE", "NON_REQUIRED", "")
         arcpy.CalculateField_management(singlepart, "ACRES", "!POLY_AREA!", "PYTHON_9.3", "")
         print "Final output"
-        arcpy.FeatureClassToFeatureClass_conversion(singlepart, Workspace, "Natural_flood_" + region, "ACRES >= 1 AND COVER_TYPE <> ''", "MANAGE \"MANAGE\" true true false 2 Short 0 0 ,First,#," + singlepart + ",MANAGE,-1,-1;BASIN__HUC \"BASIN__HUC\" true true false 29 Text 0 0 ,First,#," + singlepart + ",BASIN__HUC,-1,-1;ACRES \"ACRES\" true true false 4 Double 3 18 ,First,#," + singlepart + ",ACRES,-1,-1;WATERSHED \"WATERSHED\" true true false 45 Text 0 0 ,First,#," + singlepart + ",GAUGE,-1,-1;STATE \"STATE\" true true false 2 Text 0 0 ,First,#," + singlepart + ",STATE_ABBR,-1,-1;Z_RED_OAK_ \"Z_RED_OAK_\" true true false 8 Double 0 0 ,First,#," + singlepart + ",Z_RED_OAK_,-1,-1;HABITAT_TY \"HABITAT_TY\" true true false 16 Text 0 0 ,First,#," + singlepart + ",HABITAT_TY,-1,-1;Z_HARVESTE \"Z_HARVESTE\" true true false 8 Double 0 0 ,First,#," + singlepart + ",Z_HARVESTE,-1,-1;MANAGING_A \"MANAGING_A\" true true false 255 Text 0 0 ,First,#," + singlepart + ",MANAGING_A,-1,-1;COMMON_NAM \"COMMON_NAM\" true true false 100 Text 0 0 ,First,#," + singlepart + ",COMMON_NAM,-1,-1;PROTECTION \"PROTECTION\" true true false 20 Text 0 0 ,First,#," + singlepart + ",PROTECTION,-1,-1;SEEDINDEX \"SEEDINDEX\" true true false 8 Double 0 0 ,First,#," + singlepart + ",SEEDINDEX,-1,-1;WTRCNTRL \"WTRCNTRL\" true true false 5 Text 0 0 ,First,#," + singlepart + ",WTRCNTRL,-1,-1;PUMP \"PUMP\" true true false 5 Text 0 0 ,First,#," + singlepart + ",PUMP,-1,-1;REF_HAB \"REF_HAB\" true true false 5 Text 0 0 ,First,#," + singlepart + ",REF_HAB,-1,-1;REFHABAC \"REFHABAC\" true true false 8 Double 0 0 ,First,#," + singlepart + ",REFHABAC,-1,-1;MANAGEMENT \"MANAGEMENT\" true true false 100 Text 0 0 ,First,#," + singlepart + ",MANAGEMENT,-1,-1;FUNCTIONAL \"FUNCTIONAL\" true true false 1 Text 0 0 ,First,#," + singlepart + ",FUNCTIONAL,-1,-1;DEDCALC \"DEDCALC\" true true false 4 Float 0 0 ,First,#," + singlepart + ",DEDCALC,-1,-1;OWNER \"OWNER\" true true false 20 Text 0 0 ,First,#," + singlepart + ",OWNER,-1,-1;COVER_TYPE \"COVER_TYPE\" true true false 255 Text 0 0 ,First,#," + singlepart + ",COVER_TYPE,-1,-1", "")
+        arcpy.FeatureClassToFeatureClass_conversion(singlepart, Workspace, "Natural_flood_" + region, "ACRES >= 1 AND COVER_TYPE <> ''", "MANAGE \"MANAGE\" true true false 2 Short 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",MANAGE,-1,-1;BASIN__HUC \"BASIN__HUC\" true true false 29 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",BASIN__HUC,-1,-1;ACRES \"ACRES\" true true false 4 Double 3 18 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",ACRES,-1,-1;WATERSHED \"WATERSHED\" true true false 45 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",GAUGE,-1,-1;STATE \"STATE\" true true false 2 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",STATE_ABBR,-1,-1;Z_RED_OAK_ \"Z_RED_OAK_\" true true false 8 Double 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",Z_RED_OAK_,-1,-1;HABITAT_TY \"HABITAT_TY\" true true false 16 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",HABITAT_TY,-1,-1;Z_HARVESTE \"Z_HARVESTE\" true true false 8 Double 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",Z_HARVESTE,-1,-1;MANAGING_A \"MANAGING_A\" true true false 255 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",MANAGING_A,-1,-1;COMMON_NAM \"COMMON_NAM\" true true false 100 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",COMMON_NAM,-1,-1;PROTECTION \"PROTECTION\" true true false 20 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",PROTECTION,-1,-1;SEEDINDEX \"SEEDINDEX\" true true false 8 Double 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",SEEDINDEX,-1,-1;WTRCNTRL \"WTRCNTRL\" true true false 5 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",WTRCNTRL,-1,-1;PUMP \"PUMP\" true true false 5 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",PUMP,-1,-1;REF_HAB \"REF_HAB\" true true false 5 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",REF_HAB,-1,-1;REFHABAC \"REFHABAC\" true true false 8 Double 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",REFHABAC,-1,-1;MANAGEMENT \"MANAGEMENT\" true true false 100 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",MANAGEMENT,-1,-1;FUNCTIONAL \"FUNCTIONAL\" true true false 1 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",FUNCTIONAL,-1,-1;DEDCALC \"DEDCALC\" true true false 4 Float 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",DEDCALC,-1,-1;OWNER \"OWNER\" true true false 20 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",OWNER,-1,-1;COVER_TYPE \"COVER_TYPE\" true true false 255 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",COVER_TYPE,-1,-1", "")
         print("Everything good")
         
 
