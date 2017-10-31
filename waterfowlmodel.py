@@ -12,7 +12,7 @@
 
 
 # Import arcpy module
-import finaloutput, naturalflood#, public
+import finaloutput, naturalflood, public
 import arcpy, os, sys, getopt, datetime, shutil, logging
 codeversion = '1.10'
 def printHelp():
@@ -77,7 +77,7 @@ def main(argv):
    print 'Copying data and creating log for model run'
    newinworkspace = os.path.join(inworkspace, aoi + "_" + datetime.datetime.now().strftime("%m_%d_%Y"))
    print(os.path.join(newinworkspace,"Waterfowl_" +datetime.datetime.now().strftime("%m_%d_%Y")+ ".log"))
-   logging.basicConfig(filename=os.path.join(newinworkspace,"Waterfowl_" +datetime.datetime.now().strftime("%m_%d_%Y")+ ".log"), filemode='w', level=logging.INFO)
+   logging.basicConfig(filename=os.path.join(newinworkspace,"Waterfowl_" + model + "_" + datetime.datetime.now().strftime("%m_%d_%Y")+ ".log"), filemode='w', level=logging.INFO)
    logging.info("Waterfowl model run")
    logging.info('Version: ' + codeversion)
    logging.info('Model: ' + model)
