@@ -12,9 +12,9 @@
 
 
 # Import arcpy module
-import finaloutput, naturalflood, public
-import arcpy, os, sys, getopt, datetime
-
+import finaloutput, naturalflood#, public
+import arcpy, os, sys, getopt, datetime, shutil, logging
+codeversion = '1.10'
 def printHelp():
         print '\n waterfowlmodel.py -m <waterfowl or flood> -r <Area of interest feature class> -w <workspace folder where geodatabases should reside> -g <geodatabase name>\n\n' \
                 '\n This is the main python script for running the wintering grounds waterfowl model for both the Mississippi Alluvial Valley and West Gulf Coastal Plain regions.\n'\
@@ -70,18 +70,35 @@ def main(argv):
 
    if len(opts) < 4:
         printHelp()
-        
    print 'Model: ', model
    print 'Region of interest: ', aoi
    print 'Workspace: ', inworkspace
    print 'GDB: ', ingdb
+   print 'Copying data and creating log for model run'
+   newinworkspace = os.path.join(inworkspace, aoi + "_" + datetime.datetime.now().strftime("%m_%d_%Y"))
+   print(os.path.join(newinworkspace,"Waterfowl_" +datetime.datetime.now().strftime("%m_%d_%Y")+ ".log"))
+   logging.basicConfig(filename=os.path.join(newinworkspace,"Waterfowl_" +datetime.datetime.now().strftime("%m_%d_%Y")+ ".log"), filemode='w', level=logging.INFO)
+   logging.info("Waterfowl model run")
+   logging.info('Version: ' + codeversion)
+   logging.info('Model: ' + model)
+   logging.info('Region of interest: ' + aoi)
+   logging.info('Workspace: ' + newinworkspace)
 
+   if not os.path.exists(newinworkspace):
+           os.makedirs(newinworkspace)
+   newingdb = os.path.join(newinworkspace, aoi + "_input_" + datetime.datetime.now().strftime("%m_%d_%Y") + ".gdb")
+   logging.info('GDB: ' + newingdb)
+   print newingdb
+   if not os.path.exists(newingdb):
+           shutil.copytree(os.path.join(inworkspace, ingdb), newingdb)
+   ingdb = newingdb
+   inworkspace = newinworkspace
    if model == 'waterfowl':
            finaloutput.runWaterfowl(aoi.lower(), inworkspace, ingdb)
    elif model == 'flood':
            naturalflood.runFlood(aoi.lower(), inworkspace, ingdb)
    elif model == 'public':
            public.runPublic(aoi.lower(), inworkspace, ingdb)
-           
+   logging.info('Model run complete')
 if __name__ == "__main__":
    main(sys.argv[1:])

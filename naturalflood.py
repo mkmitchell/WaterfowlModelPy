@@ -8,7 +8,7 @@
 # ---------------------------------------------------------------------------
 
 # Import arcpy module
-import arcpy, os, sys, getopt, prepflood
+import arcpy, os, sys, getopt, prepflood, logging
 from arcpy.sa import *
 
 
@@ -19,7 +19,6 @@ crops = "CDL_2015"
 stateboundary = "State_boundaries"
 wrp = "WRP"
 floodpct = 40
-
 arcpy.env.overwriteOutput = True;
 
 def checkField (shp, field):
@@ -32,7 +31,10 @@ def checkField (shp, field):
         
 # Setup model specifics
 def runFlood (region, workspace, gdb):
-
+        logging.info('Running natural flood model')
+        logging.info('Crops: ' + crops)
+        logging.info('WRP: ' + wrp)
+        logging.info('Flood: ' + str(floodpct) + '%')
 	gdb = os.path.join(workspace, gdb)
 	scratchgdb = os.path.join(workspace, region + "_scratch.gdb")
 	aoi = os.path.join(gdb, region)
@@ -179,6 +181,7 @@ def runFlood (region, workspace, gdb):
         print "Final output"
         arcpy.FeatureClassToFeatureClass_conversion(singlepart, Workspace, "Natural_flood_" + region, "ACRES >= 1 AND COVER_TYPE <> ''", "MANAGE \"MANAGE\" true true false 2 Short 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",MANAGE,-1,-1;BASIN__HUC \"BASIN__HUC\" true true false 29 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",BASIN__HUC,-1,-1;ACRES \"ACRES\" true true false 4 Double 3 18 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",ACRES,-1,-1;WATERSHED \"WATERSHED\" true true false 45 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",GAUGE,-1,-1;STATE \"STATE\" true true false 2 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",STATE_ABBR,-1,-1;Z_RED_OAK_ \"Z_RED_OAK_\" true true false 8 Double 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",Z_RED_OAK_,-1,-1;HABITAT_TY \"HABITAT_TY\" true true false 16 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",HABITAT_TY,-1,-1;Z_HARVESTE \"Z_HARVESTE\" true true false 8 Double 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",Z_HARVESTE,-1,-1;MANAGING_A \"MANAGING_A\" true true false 255 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",MANAGING_A,-1,-1;COMMON_NAM \"COMMON_NAM\" true true false 100 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",COMMON_NAM,-1,-1;PROTECTION \"PROTECTION\" true true false 20 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",PROTECTION,-1,-1;SEEDINDEX \"SEEDINDEX\" true true false 8 Double 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",SEEDINDEX,-1,-1;WTRCNTRL \"WTRCNTRL\" true true false 5 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",WTRCNTRL,-1,-1;PUMP \"PUMP\" true true false 5 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",PUMP,-1,-1;REF_HAB \"REF_HAB\" true true false 5 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",REF_HAB,-1,-1;REFHABAC \"REFHABAC\" true true false 8 Double 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",REFHABAC,-1,-1;MANAGEMENT \"MANAGEMENT\" true true false 100 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",MANAGEMENT,-1,-1;FUNCTIONAL \"FUNCTIONAL\" true true false 1 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",FUNCTIONAL,-1,-1;DEDCALC \"DEDCALC\" true true false 4 Float 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",DEDCALC,-1,-1;OWNER \"OWNER\" true true false 20 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",OWNER,-1,-1;COVER_TYPE \"COVER_TYPE\" true true false 255 Text 0 0 ,First,#," + os.path.join(scratchgdb, "SinglePart") + ",COVER_TYPE,-1,-1", "")
         print("Everything good")
+        logging.info('Done with flood model.  Output: Natural_flood_' + region)
         
 
 
