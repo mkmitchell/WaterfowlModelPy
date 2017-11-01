@@ -74,25 +74,26 @@ def main(argv):
    print 'Region of interest: ', aoi
    print 'Workspace: ', inworkspace
    print 'GDB: ', ingdb
-   print 'Copying data and creating log for model run'
-   newinworkspace = os.path.join(inworkspace, aoi + "_" + datetime.datetime.now().strftime("%m_%d_%Y"))
-   print(os.path.join(newinworkspace,"Waterfowl_" +datetime.datetime.now().strftime("%m_%d_%Y")+ ".log"))
-   logging.basicConfig(filename=os.path.join(newinworkspace,"Waterfowl_" + model + "_" + datetime.datetime.now().strftime("%m_%d_%Y")+ ".log"), filemode='w', level=logging.INFO)
+   if model == 'waterfowl':
+           print 'Copying data and creating log for model run'
+           newinworkspace = os.path.join(inworkspace, aoi + "_" + datetime.datetime.now().strftime("%m_%d_%Y"))
+           print(os.path.join(newinworkspace,"Waterfowl_" +datetime.datetime.now().strftime("%m_%d_%Y")+ ".log"))
+           if not os.path.exists(newinworkspace):
+                   os.makedirs(newinworkspace)
+           newingdb = os.path.join(inworkspace, aoi + "_input_" + datetime.datetime.now().strftime("%m_%d_%Y") + ".gdb")
+           if not os.path.exists(newingdb):
+                   shutil.copytree(os.path.join(inworkspace, ingdb), newingdb)
+           inworkspace = newinworkspace
+           ingdb = newingdb
+
+   logging.basicConfig(filename=os.path.join(inworkspace,"Waterfowl_" + model + "_" + datetime.datetime.now().strftime("%m_%d_%Y")+ ".log"), filemode='w', level=logging.INFO)
    logging.info("Waterfowl model run")
    logging.info('Version: ' + codeversion)
    logging.info('Model: ' + model)
    logging.info('Region of interest: ' + aoi)
-   logging.info('Workspace: ' + newinworkspace)
+   logging.info('Workspace: ' + inworkspace)
+   logging.info('GDB: ' + ingdb)
 
-   if not os.path.exists(newinworkspace):
-           os.makedirs(newinworkspace)
-   newingdb = os.path.join(newinworkspace, aoi + "_input_" + datetime.datetime.now().strftime("%m_%d_%Y") + ".gdb")
-   logging.info('GDB: ' + newingdb)
-   print newingdb
-   if not os.path.exists(newingdb):
-           shutil.copytree(os.path.join(inworkspace, ingdb), newingdb)
-   ingdb = newingdb
-   inworkspace = newinworkspace
    if model == 'waterfowl':
            finaloutput.runWaterfowl(aoi.lower(), inworkspace, ingdb)
    elif model == 'flood':
