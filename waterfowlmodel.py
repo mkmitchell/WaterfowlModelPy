@@ -49,7 +49,7 @@ def main(argv):
          printHelp()
       elif opt in ("-m", "--model"):
          model = arg
-         if model.lower() not in ("waterfowl", "flood", "public"):
+         if model.lower() not in ("waterfowl", "flood", "public", "all"):
                  print 'Model is incorrect'
                  sys.exit(2)
       elif opt in ("-r", "--region"):
@@ -80,7 +80,7 @@ def main(argv):
            print(os.path.join(newinworkspace,"Waterfowl_" +datetime.datetime.now().strftime("%m_%d_%Y")+ ".log"))
            if not os.path.exists(newinworkspace):
                    os.makedirs(newinworkspace)
-           newingdb = os.path.join(inworkspace, aoi + "_input_" + datetime.datetime.now().strftime("%m_%d_%Y") + ".gdb")
+           newingdb = os.path.join(newinworkspace, aoi + "_input_" + datetime.datetime.now().strftime("%m_%d_%Y") + ".gdb")
            if not os.path.exists(newingdb):
                    shutil.copytree(os.path.join(inworkspace, ingdb), newingdb)
            inworkspace = newinworkspace
@@ -100,6 +100,13 @@ def main(argv):
            naturalflood.runFlood(aoi.lower(), inworkspace, ingdb)
    elif model == 'public':
            public.runPublic(aoi.lower(), inworkspace, ingdb)
+   elif model == 'public':
+           naturalflood.runFlood(aoi.lower(), inworkspace, ingdb)
+           public.runPublic(aoi.lower(), inworkspace, ingdb)
+           finaloutput.runWaterfowl(aoi.lower(), inworkspace, ingdb)
+           
    logging.info('Model run complete')
+   sys.exit()
+   
 if __name__ == "__main__":
    main(sys.argv[1:])

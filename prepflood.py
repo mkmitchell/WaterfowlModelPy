@@ -41,7 +41,7 @@ def prepFlood (scratchgdb, pct, flood):
         rasFlood = Raster(flood)
         outFlood = Con(rasFlood > pct, 1, 0)
         outFlood.save(os.path.join(scratchgdb, "floodSetup"))
-        print("Everything good")
+        print("Flood prepped")
         
 
 

@@ -84,20 +84,23 @@ def runFlood (region, workspace, gdb):
         rasCrop = Raster(Crops)
         # Replace a layer/table view name with a path to a dataset (which can be a layer file) or create the layer/table view within the script
         print "Configuring crop type"
-        outCrop = Con((rasCrop == 1) | (rasCrop == 3) | (rasCrop == 4) | (rasCrop == 5) | (rasCrop == 29) | (rasCrop == 190), rasCrop, 0)
+        outCrop = Con((rasCrop == 1) | (rasCrop == 3) | (rasCrop == 4) | (rasCrop == 5) | (rasCrop == 29) | (rasCrop == 83) | (rasCrop == 111) | (rasCrop == 190) | (rasCrop == 195), rasCrop, 0)
         print "Converting crop raster to polygon.  This can take a very long time"
         ############# SKIP
         polyCrop = arcpy.RasterToPolygon_conversion(outCrop, os.path.join(scratchgdb, "polyCrop"), "NO_SIMPLIFY", "Value")
         #print "Skipping polygon conversion for testing"
         #polyCrop = os.path.join(scratchgdb, "polyCrop")
         ############
+        #print "Skipping crop selection for testing"
+        #selectCrop = os.path.join(scratchgdb, "sltCrop")
         selectCrop = arcpy.Select_analysis(polyCrop, os.path.join(scratchgdb, "sltCrop"), "gridcode > 0")
         arcpy.AddField_management(selectCrop, "CLASS_NAME", "TEXT", "", "", "100", "", "NULLABLE", "NON_REQUIRED", "")
-        arcpy.CalculateField_management(selectCrop, "CLASS_NAME", "Calc( !gridcode!)", "PYTHON_9.3", "def Calc(grid):\\n  if (grid==1):\\n    return 'Corn'\\n  if (grid==3):\\n    return 'Rice'\\n  if (grid==4):\\n    return 'Sorghum'\\n  if (grid==5):\\n    return 'Soybeans'\\n  if (grid==29):\\n    return 'Millet'\\n  if (grid==190):\\n    return 'Woody Wetlands'")
+        arcpy.CalculateField_management(selectCrop, "CLASS_NAME", "Calc( !gridcode!)", "PYTHON_9.3", "def Calc(grid):\\n  if (grid==1):\\n    return 'Corn'\\n  if (grid==3):\\n    return 'Rice'\\n  if (grid==4):\\n    return 'Sorghum'\\n  if (grid==5):\\n    return 'Soybeans'\\n  if (grid==29):\\n    return 'Millet'\\n  if (grid==83 or grid==111):\\n    return 'Open-aquatic'\\n  if (grid==190):\\n    return 'Woody Wetlands'\\n  if (grid==195):\\n    return 'Wetland'")
         ###### Also skipping for speed and testing
         print "Import flood"
         prepflood.prepFlood(scratchgdb, floodpct, Flooding)
         Flooding = os.path.join(scratchgdb, "floodSetup")
+        print "Converting raster flood to polygon"
         plyFlood = arcpy.RasterToPolygon_conversion(Raster(Flooding), os.path.join(scratchgdb, "flooding"), "NO_SIMPLIFY", "VALUE")
         #plyFlood = os.path.join(scratchgdb, "flooding")
         selectFlood = arcpy.Select_analysis(plyFlood, os.path.join(scratchgdb,"sltFlood"), "\"gridcode\" = 1")
@@ -155,7 +158,7 @@ def runFlood (region, workspace, gdb):
         if checkField(unionclip, "REFHABAC"):
                 arcpy.AddField_management(unionclip, "REFHABAC", "DOUBLE", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
         arcpy.CalculateField_management(unionclip, "MANAGING_A", "'Private'", "PYTHON_9.3", "")
-        arcpy.CalculateField_management(unionclip, "HABITAT_TY", "Calc( !CLASS_NAME!)", "PYTHON_9.3", "def Calc(cover):\\n  ag = ['Corn', 'Millet', 'Sorghum', 'Rice', 'Soybeans']\\n  if (cover in ag):\\n    return 'Cropland'\\n  if (cover == 'Woody Wetlands'):\\n    return cover\\n  return ''\\n")
+        arcpy.CalculateField_management(unionclip, "HABITAT_TY", "Calc( !CLASS_NAME!)", "PYTHON_9.3", "def Calc(cover):\\n  ag = ['Corn', 'Millet', 'Sorghum', 'Rice', 'Soybeans']\\n  if (cover in ag):\\n    return 'Cropland'\\n  if (cover == 'Woody Wetlands'):\\n    return cover\\n  if (cover == 'Open-aquatic'):\\n    return cover\\n  if (cover == 'Wetland'):\\n    return cover\\n  return ''\\n")
         arcpy.CalculateField_management(unionclip, "HABITAT_TY", "Calc( !MANAGE!, !HABITAT_TY! )", "PYTHON_9.3", "def Calc(manage, hab):\\n  if(manage==2):\\n    return 'WRP'\\n  else:\\n    return hab")
         arcpy.CalculateField_management(unionclip, "CLASS_NAME", "Calc( !MANAGE!, !CLASS_NAME! )", "PYTHON_9.3", "def Calc(manage, cover):\\n  if(manage==2):\\n    return 'WRP'\\n  else:\\n    return cover")
         if checkField(unionclip, "MANAGEMENT"):
